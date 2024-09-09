@@ -1,25 +1,23 @@
 import type { AttributeValue, Attributes } from '@opentelemetry/api';
 import { SpanKind } from '@opentelemetry/api';
 import {
-  SEMATTRS_DB_STATEMENT,
-  SEMATTRS_DB_SYSTEM,
-  SEMATTRS_FAAS_TRIGGER,
-  SEMATTRS_HTTP_METHOD,
-  SEMATTRS_HTTP_ROUTE,
-  SEMATTRS_HTTP_TARGET,
-  SEMATTRS_HTTP_URL,
-  SEMATTRS_MESSAGING_SYSTEM,
-  SEMATTRS_RPC_SERVICE,
-} from '@opentelemetry/semantic-conventions';
+  ATTR_DB_QUERY_TEXT,
+  ATTR_DB_STATEMENT,
+  ATTR_DB_SYSTEM,
+  ATTR_FAAS_TRIGGER,
+  ATTR_HTTP_METHOD,
+  ATTR_HTTP_REQUEST_METHOD,
+  ATTR_HTTP_ROUTE,
+  ATTR_HTTP_TARGET,
+  ATTR_HTTP_URL,
+  ATTR_MESSAGING_SYSTEM,
+  ATTR_RPC_SERVICE,
+  ATTR_URL_FULL,
+} from '@opentelemetry/semantic-conventions/incubating';
 import type { SpanAttributes, TransactionSource } from '@sentry/types';
 import { getSanitizedUrlString, parseUrl, stripUrlQueryAndFragment } from '@sentry/utils';
 
-import {
-  SEMANTIC_ATTRIBUTE_HTTP_REQUEST_METHOD,
-  SEMANTIC_ATTRIBUTE_SENTRY_OP,
-  SEMANTIC_ATTRIBUTE_SENTRY_ORIGIN,
-  SEMANTIC_ATTRIBUTE_URL_FULL,
-} from '@sentry/core';
+import { SEMANTIC_ATTRIBUTE_SENTRY_OP, SEMANTIC_ATTRIBUTE_SENTRY_ORIGIN } from '@sentry/core';
 import { SEMANTIC_ATTRIBUTE_SENTRY_GRAPHQL_OPERATION } from '../semanticAttributes';
 import type { AbstractSpan } from '../types';
 import { getSpanKind } from './getSpanKind';
@@ -50,12 +48,13 @@ export function inferSpanData(name: string, attributes: SpanAttributes, kind: Sp
   }
 
   // if http.method exists, this is an http request span
-  const httpMethod = attributes[SEMANTIC_ATTRIBUTE_HTTP_REQUEST_METHOD] || attributes[SEMATTRS_HTTP_METHOD];
+  // eslint-disable-next-line deprecation/deprecation
+  const httpMethod = attributes[ATTR_HTTP_REQUEST_METHOD] || attributes[ATTR_HTTP_METHOD];
   if (httpMethod) {
     return descriptionForHttpMethod({ attributes, name, kind }, httpMethod);
   }
 
-  const dbSystem = attributes[SEMATTRS_DB_SYSTEM];
+  const dbSystem = attributes[ATTR_DB_SYSTEM];
   const opIsCache =
     typeof attributes[SEMANTIC_ATTRIBUTE_SENTRY_OP] === 'string' &&
     attributes[SEMANTIC_ATTRIBUTE_SENTRY_OP].startsWith('cache.');
@@ -67,7 +66,7 @@ export function inferSpanData(name: string, attributes: SpanAttributes, kind: Sp
   }
 
   // If rpc.service exists then this is a rpc call span.
-  const rpcService = attributes[SEMATTRS_RPC_SERVICE];
+  const rpcService = attributes[ATTR_RPC_SERVICE];
   if (rpcService) {
     return {
       op: 'rpc',
@@ -77,7 +76,7 @@ export function inferSpanData(name: string, attributes: SpanAttributes, kind: Sp
   }
 
   // If messaging.system exists then this is a messaging system span.
-  const messagingSystem = attributes[SEMATTRS_MESSAGING_SYSTEM];
+  const messagingSystem = attributes[ATTR_MESSAGING_SYSTEM];
   if (messagingSystem) {
     return {
       op: 'message',
@@ -87,7 +86,7 @@ export function inferSpanData(name: string, attributes: SpanAttributes, kind: Sp
   }
 
   // If faas.trigger exists then this is a function as a service span.
-  const faasTrigger = attributes[SEMATTRS_FAAS_TRIGGER];
+  const faasTrigger = attributes[ATTR_FAAS_TRIGGER];
   if (faasTrigger) {
     return { op: faasTrigger.toString(), description: name, source: 'route' };
   }
@@ -110,7 +109,8 @@ export function parseSpanDescription(span: AbstractSpan): SpanDescription {
 
 function descriptionForDbSystem({ attributes, name }: { attributes: Attributes; name: string }): SpanDescription {
   // Use DB statement (Ex "SELECT * FROM table") if possible as description.
-  const statement = attributes[SEMATTRS_DB_STATEMENT];
+  // eslint-disable-next-line deprecation/deprecation
+  const statement = attributes[ATTR_DB_QUERY_TEXT] || attributes[ATTR_DB_STATEMENT];
 
   const description = statement ? statement.toString() : name;
 
@@ -213,11 +213,13 @@ export function getSanitizedUrl(
   hasRoute: boolean;
 } {
   // This is the relative path of the URL, e.g. /sub
-  const httpTarget = attributes[SEMATTRS_HTTP_TARGET];
+  // eslint-disable-next-line deprecation/deprecation
+  const httpTarget = attributes[ATTR_HTTP_TARGET];
   // This is the full URL, including host & query params etc., e.g. https://example.com/sub?foo=bar
-  const httpUrl = attributes[SEMATTRS_HTTP_URL] || attributes[SEMANTIC_ATTRIBUTE_URL_FULL];
+  // eslint-disable-next-line deprecation/deprecation
+  const httpUrl = attributes[ATTR_HTTP_URL] || attributes[ATTR_URL_FULL];
   // This is the normalized route name - may not always be available!
-  const httpRoute = attributes[SEMATTRS_HTTP_ROUTE];
+  const httpRoute = attributes[ATTR_HTTP_ROUTE];
 
   const parsedUrl = typeof httpUrl === 'string' ? parseUrl(httpUrl) : undefined;
   const url = parsedUrl ? getSanitizedUrlString(parsedUrl) : undefined;

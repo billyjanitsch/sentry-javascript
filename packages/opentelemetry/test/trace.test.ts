@@ -1,3 +1,4 @@
+/* eslint-disable deprecation/deprecation */
 import type { Span, TimeInput } from '@opentelemetry/api';
 import { ROOT_CONTEXT } from '@opentelemetry/api';
 import { SpanKind } from '@opentelemetry/api';
@@ -21,7 +22,7 @@ import {
 } from '@sentry/core';
 import type { Event, Scope } from '@sentry/types';
 
-import { SEMATTRS_HTTP_METHOD } from '@opentelemetry/semantic-conventions';
+import { ATTR_HTTP_METHOD } from '@opentelemetry/semantic-conventions/incubating';
 import { continueTrace, startInactiveSpan, startSpan, startSpanManual } from '../src/trace';
 import type { AbstractSpan } from '../src/types';
 import { getActiveSpan } from '../src/utils/getActiveSpan';
@@ -1461,36 +1462,33 @@ describe('HTTP methods (sampling)', () => {
   });
 
   it('does sample when HTTP method is other than OPTIONS or HEAD', () => {
-    const spanGET = startSpanManual({ name: 'test span', attributes: { [SEMATTRS_HTTP_METHOD]: 'GET' } }, span => {
+    const spanGET = startSpanManual({ name: 'test span', attributes: { [ATTR_HTTP_METHOD]: 'GET' } }, span => {
       return span;
     });
     expect(spanIsSampled(spanGET)).toBe(true);
     expect(getSamplingDecision(spanGET.spanContext())).toBe(true);
 
-    const spanPOST = startSpanManual({ name: 'test span', attributes: { [SEMATTRS_HTTP_METHOD]: 'POST' } }, span => {
+    const spanPOST = startSpanManual({ name: 'test span', attributes: { [ATTR_HTTP_METHOD]: 'POST' } }, span => {
       return span;
     });
     expect(spanIsSampled(spanPOST)).toBe(true);
     expect(getSamplingDecision(spanPOST.spanContext())).toBe(true);
 
-    const spanPUT = startSpanManual({ name: 'test span', attributes: { [SEMATTRS_HTTP_METHOD]: 'PUT' } }, span => {
+    const spanPUT = startSpanManual({ name: 'test span', attributes: { [ATTR_HTTP_METHOD]: 'PUT' } }, span => {
       return span;
     });
     expect(spanIsSampled(spanPUT)).toBe(true);
     expect(getSamplingDecision(spanPUT.spanContext())).toBe(true);
 
-    const spanDELETE = startSpanManual(
-      { name: 'test span', attributes: { [SEMATTRS_HTTP_METHOD]: 'DELETE' } },
-      span => {
-        return span;
-      },
-    );
+    const spanDELETE = startSpanManual({ name: 'test span', attributes: { [ATTR_HTTP_METHOD]: 'DELETE' } }, span => {
+      return span;
+    });
     expect(spanIsSampled(spanDELETE)).toBe(true);
     expect(getSamplingDecision(spanDELETE.spanContext())).toBe(true);
   });
 
   it('does not sample when HTTP method is OPTIONS', () => {
-    const span = startSpanManual({ name: 'test span', attributes: { [SEMATTRS_HTTP_METHOD]: 'OPTIONS' } }, span => {
+    const span = startSpanManual({ name: 'test span', attributes: { [ATTR_HTTP_METHOD]: 'OPTIONS' } }, span => {
       return span;
     });
     expect(spanIsSampled(span)).toBe(false);
@@ -1498,7 +1496,7 @@ describe('HTTP methods (sampling)', () => {
   });
 
   it('does not sample when HTTP method is HEAD', () => {
-    const span = startSpanManual({ name: 'test span', attributes: { [SEMATTRS_HTTP_METHOD]: 'HEAD' } }, span => {
+    const span = startSpanManual({ name: 'test span', attributes: { [ATTR_HTTP_METHOD]: 'HEAD' } }, span => {
       return span;
     });
     expect(spanIsSampled(span)).toBe(false);

@@ -1,18 +1,19 @@
+/* eslint-disable deprecation/deprecation */
 import type { Span } from '@opentelemetry/api';
 import { SpanKind } from '@opentelemetry/api';
 import {
-  SEMATTRS_DB_STATEMENT,
-  SEMATTRS_DB_SYSTEM,
-  SEMATTRS_FAAS_TRIGGER,
-  SEMATTRS_HTTP_HOST,
-  SEMATTRS_HTTP_METHOD,
-  SEMATTRS_HTTP_ROUTE,
-  SEMATTRS_HTTP_STATUS_CODE,
-  SEMATTRS_HTTP_TARGET,
-  SEMATTRS_HTTP_URL,
-  SEMATTRS_MESSAGING_SYSTEM,
-  SEMATTRS_RPC_SERVICE,
-} from '@opentelemetry/semantic-conventions';
+  ATTR_DB_STATEMENT,
+  ATTR_DB_SYSTEM,
+  ATTR_FAAS_TRIGGER,
+  ATTR_HTTP_HOST,
+  ATTR_HTTP_METHOD,
+  ATTR_HTTP_ROUTE,
+  ATTR_HTTP_STATUS_CODE,
+  ATTR_HTTP_TARGET,
+  ATTR_HTTP_URL,
+  ATTR_MESSAGING_SYSTEM,
+  ATTR_RPC_SERVICE,
+} from '@opentelemetry/semantic-conventions/incubating';
 
 import { descriptionForHttpMethod, getSanitizedUrl, parseSpanDescription } from '../../src/utils/parseSpanDescription';
 
@@ -43,7 +44,7 @@ describe('parseSpanDescription', () => {
     [
       'works with deprecated http method',
       {
-        [SEMATTRS_HTTP_METHOD]: 'GET',
+        [ATTR_HTTP_METHOD]: 'GET',
       },
       'test name',
       SpanKind.CLIENT,
@@ -69,8 +70,8 @@ describe('parseSpanDescription', () => {
     [
       'works with db system',
       {
-        [SEMATTRS_DB_SYSTEM]: 'mysql',
-        [SEMATTRS_DB_STATEMENT]: 'SELECT * from users',
+        [ATTR_DB_SYSTEM]: 'mysql',
+        [ATTR_DB_STATEMENT]: 'SELECT * from users',
       },
       'test name',
       SpanKind.CLIENT,
@@ -83,7 +84,7 @@ describe('parseSpanDescription', () => {
     [
       'works with db system without statement',
       {
-        [SEMATTRS_DB_SYSTEM]: 'mysql',
+        [ATTR_DB_SYSTEM]: 'mysql',
       },
       'test name',
       SpanKind.CLIENT,
@@ -96,7 +97,7 @@ describe('parseSpanDescription', () => {
     [
       'works with rpc service',
       {
-        [SEMATTRS_RPC_SERVICE]: 'rpc-test-service',
+        [ATTR_RPC_SERVICE]: 'rpc-test-service',
       },
       'test name',
       undefined,
@@ -109,7 +110,7 @@ describe('parseSpanDescription', () => {
     [
       'works with messaging system',
       {
-        [SEMATTRS_MESSAGING_SYSTEM]: 'test-messaging-system',
+        [ATTR_MESSAGING_SYSTEM]: 'test-messaging-system',
       },
       'test name',
       undefined,
@@ -122,7 +123,7 @@ describe('parseSpanDescription', () => {
     [
       'works with faas trigger',
       {
-        [SEMATTRS_FAAS_TRIGGER]: 'test-faas-trigger',
+        [ATTR_FAAS_TRIGGER]: 'test-faas-trigger',
       },
       'test name',
       undefined,
@@ -138,9 +139,9 @@ describe('parseSpanDescription', () => {
         'sentry.skip_span_data_inference': true,
 
         // All of these should be ignored
-        [SEMATTRS_HTTP_METHOD]: 'GET',
-        [SEMATTRS_DB_SYSTEM]: 'mysql',
-        [SEMATTRS_DB_STATEMENT]: 'SELECT * from users',
+        [ATTR_HTTP_METHOD]: 'GET',
+        [ATTR_DB_SYSTEM]: 'mysql',
+        [ATTR_DB_STATEMENT]: 'SELECT * from users',
       },
       'test name',
       undefined,
@@ -177,9 +178,9 @@ describe('descriptionForHttpMethod', () => {
       'works with basic client GET',
       'GET',
       {
-        [SEMATTRS_HTTP_METHOD]: 'GET',
-        [SEMATTRS_HTTP_URL]: 'https://www.example.com/my-path',
-        [SEMATTRS_HTTP_TARGET]: '/my-path',
+        [ATTR_HTTP_METHOD]: 'GET',
+        [ATTR_HTTP_URL]: 'https://www.example.com/my-path',
+        [ATTR_HTTP_TARGET]: '/my-path',
       },
       'test name',
       SpanKind.CLIENT,
@@ -196,9 +197,9 @@ describe('descriptionForHttpMethod', () => {
       'works with basic server POST',
       'POST',
       {
-        [SEMATTRS_HTTP_METHOD]: 'POST',
-        [SEMATTRS_HTTP_URL]: 'https://www.example.com/my-path',
-        [SEMATTRS_HTTP_TARGET]: '/my-path',
+        [ATTR_HTTP_METHOD]: 'POST',
+        [ATTR_HTTP_URL]: 'https://www.example.com/my-path',
+        [ATTR_HTTP_TARGET]: '/my-path',
       },
       'test name',
       SpanKind.SERVER,
@@ -215,10 +216,10 @@ describe('descriptionForHttpMethod', () => {
       'works with client GET with route',
       'GET',
       {
-        [SEMATTRS_HTTP_METHOD]: 'GET',
-        [SEMATTRS_HTTP_URL]: 'https://www.example.com/my-path/123',
-        [SEMATTRS_HTTP_TARGET]: '/my-path/123',
-        [SEMATTRS_HTTP_ROUTE]: '/my-path/:id',
+        [ATTR_HTTP_METHOD]: 'GET',
+        [ATTR_HTTP_URL]: 'https://www.example.com/my-path/123',
+        [ATTR_HTTP_TARGET]: '/my-path/123',
+        [ATTR_HTTP_ROUTE]: '/my-path/:id',
       },
       'test name',
       SpanKind.CLIENT,
@@ -235,9 +236,9 @@ describe('descriptionForHttpMethod', () => {
       'works with basic client GET with SpanKind.INTERNAL',
       'GET',
       {
-        [SEMATTRS_HTTP_METHOD]: 'GET',
-        [SEMATTRS_HTTP_URL]: 'https://www.example.com/my-path',
-        [SEMATTRS_HTTP_TARGET]: '/my-path',
+        [ATTR_HTTP_METHOD]: 'GET',
+        [ATTR_HTTP_URL]: 'https://www.example.com/my-path',
+        [ATTR_HTTP_TARGET]: '/my-path',
       },
       'test name',
       SpanKind.INTERNAL,
@@ -273,11 +274,11 @@ describe('getSanitizedUrl', () => {
     [
       'uses url without query for client request',
       {
-        [SEMATTRS_HTTP_URL]: 'http://example.com/?what=true',
-        [SEMATTRS_HTTP_METHOD]: 'GET',
-        [SEMATTRS_HTTP_TARGET]: '/?what=true',
-        [SEMATTRS_HTTP_HOST]: 'example.com:80',
-        [SEMATTRS_HTTP_STATUS_CODE]: 200,
+        [ATTR_HTTP_URL]: 'http://example.com/?what=true',
+        [ATTR_HTTP_METHOD]: 'GET',
+        [ATTR_HTTP_TARGET]: '/?what=true',
+        [ATTR_HTTP_HOST]: 'example.com:80',
+        [ATTR_HTTP_STATUS_CODE]: 200,
       },
       SpanKind.CLIENT,
       {
@@ -291,11 +292,11 @@ describe('getSanitizedUrl', () => {
     [
       'uses url without hash for client request',
       {
-        [SEMATTRS_HTTP_URL]: 'http://example.com/sub#hash',
-        [SEMATTRS_HTTP_METHOD]: 'GET',
-        [SEMATTRS_HTTP_TARGET]: '/sub#hash',
-        [SEMATTRS_HTTP_HOST]: 'example.com:80',
-        [SEMATTRS_HTTP_STATUS_CODE]: 200,
+        [ATTR_HTTP_URL]: 'http://example.com/sub#hash',
+        [ATTR_HTTP_METHOD]: 'GET',
+        [ATTR_HTTP_TARGET]: '/sub#hash',
+        [ATTR_HTTP_HOST]: 'example.com:80',
+        [ATTR_HTTP_STATUS_CODE]: 200,
       },
       SpanKind.CLIENT,
       {
@@ -309,12 +310,12 @@ describe('getSanitizedUrl', () => {
     [
       'uses route if available for client request',
       {
-        [SEMATTRS_HTTP_URL]: 'http://example.com/?what=true',
-        [SEMATTRS_HTTP_METHOD]: 'GET',
-        [SEMATTRS_HTTP_TARGET]: '/?what=true',
-        [SEMATTRS_HTTP_ROUTE]: '/my-route',
-        [SEMATTRS_HTTP_HOST]: 'example.com:80',
-        [SEMATTRS_HTTP_STATUS_CODE]: 200,
+        [ATTR_HTTP_URL]: 'http://example.com/?what=true',
+        [ATTR_HTTP_METHOD]: 'GET',
+        [ATTR_HTTP_TARGET]: '/?what=true',
+        [ATTR_HTTP_ROUTE]: '/my-route',
+        [ATTR_HTTP_HOST]: 'example.com:80',
+        [ATTR_HTTP_STATUS_CODE]: 200,
       },
       SpanKind.CLIENT,
       {
@@ -328,10 +329,10 @@ describe('getSanitizedUrl', () => {
     [
       'falls back to target for client request if url not available',
       {
-        [SEMATTRS_HTTP_METHOD]: 'GET',
-        [SEMATTRS_HTTP_TARGET]: '/?what=true',
-        [SEMATTRS_HTTP_HOST]: 'example.com:80',
-        [SEMATTRS_HTTP_STATUS_CODE]: 200,
+        [ATTR_HTTP_METHOD]: 'GET',
+        [ATTR_HTTP_TARGET]: '/?what=true',
+        [ATTR_HTTP_HOST]: 'example.com:80',
+        [ATTR_HTTP_STATUS_CODE]: 200,
       },
       SpanKind.CLIENT,
       {
@@ -345,11 +346,11 @@ describe('getSanitizedUrl', () => {
     [
       'uses target without query for server request',
       {
-        [SEMATTRS_HTTP_URL]: 'http://example.com/?what=true',
-        [SEMATTRS_HTTP_METHOD]: 'GET',
-        [SEMATTRS_HTTP_TARGET]: '/?what=true',
-        [SEMATTRS_HTTP_HOST]: 'example.com:80',
-        [SEMATTRS_HTTP_STATUS_CODE]: 200,
+        [ATTR_HTTP_URL]: 'http://example.com/?what=true',
+        [ATTR_HTTP_METHOD]: 'GET',
+        [ATTR_HTTP_TARGET]: '/?what=true',
+        [ATTR_HTTP_HOST]: 'example.com:80',
+        [ATTR_HTTP_STATUS_CODE]: 200,
       },
       SpanKind.SERVER,
       {
@@ -363,11 +364,11 @@ describe('getSanitizedUrl', () => {
     [
       'uses target without hash for server request',
       {
-        [SEMATTRS_HTTP_URL]: 'http://example.com/?what=true',
-        [SEMATTRS_HTTP_METHOD]: 'GET',
-        [SEMATTRS_HTTP_TARGET]: '/sub#hash',
-        [SEMATTRS_HTTP_HOST]: 'example.com:80',
-        [SEMATTRS_HTTP_STATUS_CODE]: 200,
+        [ATTR_HTTP_URL]: 'http://example.com/?what=true',
+        [ATTR_HTTP_METHOD]: 'GET',
+        [ATTR_HTTP_TARGET]: '/sub#hash',
+        [ATTR_HTTP_HOST]: 'example.com:80',
+        [ATTR_HTTP_STATUS_CODE]: 200,
       },
       SpanKind.SERVER,
       {
@@ -381,12 +382,12 @@ describe('getSanitizedUrl', () => {
     [
       'uses route for server request if available',
       {
-        [SEMATTRS_HTTP_URL]: 'http://example.com/?what=true',
-        [SEMATTRS_HTTP_METHOD]: 'GET',
-        [SEMATTRS_HTTP_TARGET]: '/?what=true',
-        [SEMATTRS_HTTP_ROUTE]: '/my-route',
-        [SEMATTRS_HTTP_HOST]: 'example.com:80',
-        [SEMATTRS_HTTP_STATUS_CODE]: 200,
+        [ATTR_HTTP_URL]: 'http://example.com/?what=true',
+        [ATTR_HTTP_METHOD]: 'GET',
+        [ATTR_HTTP_TARGET]: '/?what=true',
+        [ATTR_HTTP_ROUTE]: '/my-route',
+        [ATTR_HTTP_HOST]: 'example.com:80',
+        [ATTR_HTTP_STATUS_CODE]: 200,
       },
       SpanKind.SERVER,
       {

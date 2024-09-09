@@ -1,4 +1,5 @@
-import { SEMATTRS_HTTP_METHOD, SEMATTRS_HTTP_URL } from '@opentelemetry/semantic-conventions';
+/* eslint-disable deprecation/deprecation */
+import { ATTR_HTTP_METHOD, ATTR_HTTP_URL } from '@opentelemetry/semantic-conventions/incubating';
 
 import { getRequestSpanData } from '../../src/utils/getRequestSpanData';
 import { createSpan } from '../helpers/createSpan';
@@ -14,8 +15,8 @@ describe('getRequestSpanData', () => {
   it('works with http span', () => {
     const span = createSpan();
     span.setAttributes({
-      [SEMATTRS_HTTP_URL]: 'http://example.com?foo=bar#baz',
-      [SEMATTRS_HTTP_METHOD]: 'GET',
+      [ATTR_HTTP_URL]: 'http://example.com?foo=bar#baz',
+      [ATTR_HTTP_METHOD]: 'GET',
     });
 
     const data = getRequestSpanData(span);

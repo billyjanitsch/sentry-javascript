@@ -1,4 +1,5 @@
-import { SEMATTRS_HTTP_STATUS_CODE, SEMATTRS_RPC_GRPC_STATUS_CODE } from '@opentelemetry/semantic-conventions';
+/* eslint-disable deprecation/deprecation */
+import { ATTR_HTTP_STATUS_CODE, ATTR_RPC_GRPC_STATUS_CODE } from '@opentelemetry/semantic-conventions/incubating';
 import { SPAN_STATUS_ERROR, SPAN_STATUS_OK } from '@sentry/core';
 import type { SpanStatus } from '@sentry/types';
 
@@ -62,11 +63,11 @@ describe('mapStatus', () => {
     span.setStatus({ code: 0 }); // UNSET
 
     if (httpCode) {
-      span.setAttribute(SEMATTRS_HTTP_STATUS_CODE, httpCode);
+      span.setAttribute(ATTR_HTTP_STATUS_CODE, httpCode);
     }
 
     if (grpcCode) {
-      span.setAttribute(SEMATTRS_RPC_GRPC_STATUS_CODE, grpcCode);
+      span.setAttribute(ATTR_RPC_GRPC_STATUS_CODE, grpcCode);
     }
 
     const actual = mapStatus(span);
@@ -99,7 +100,7 @@ describe('mapStatus', () => {
 
   it('infers error status form attributes when span already has error status without message', () => {
     const span = createSpan();
-    span.setAttribute(SEMATTRS_HTTP_STATUS_CODE, 500);
+    span.setAttribute(ATTR_HTTP_STATUS_CODE, 500);
     span.setStatus({ code: 2 }); // ERROR
     expect(mapStatus(span)).toEqual({ code: SPAN_STATUS_ERROR, message: 'internal_error' });
   });
